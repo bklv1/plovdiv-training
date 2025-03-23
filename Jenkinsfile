@@ -15,7 +15,17 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                checkout scm
+                // Use explicit checkout instead of 'checkout scm'
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: '*/master']], // Use master branch
+                    doGenerateSubmoduleConfigurations: false,
+                    extensions: [],
+                    submoduleCfg: [],
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/bklv1/plovdiv-training.git'
+                    ]]
+                ])
             }
         }
         
@@ -40,7 +50,7 @@ pipeline {
                     post {
                         always {
                             archiveArtifacts artifacts: "${PLAYWRIGHT_HTML_REPORT}/**", allowEmptyArchive: true
-                            junit "${TEST_RESULTS_DIR}/**/*.xml"
+                            junit allowEmptyResults: true, testResults: "${TEST_RESULTS_DIR}/**/*.xml"
                         }
                     }
                 }
@@ -52,7 +62,7 @@ pipeline {
                     post {
                         always {
                             archiveArtifacts artifacts: "${PLAYWRIGHT_HTML_REPORT}/**", allowEmptyArchive: true
-                            junit "${TEST_RESULTS_DIR}/**/*.xml"
+                            junit allowEmptyResults: true, testResults: "${TEST_RESULTS_DIR}/**/*.xml"
                         }
                     }
                 }
