@@ -12,39 +12,39 @@ pipeline {
         TEST_RESULTS_DIR = 'test-results'
     }
     
-    stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
+stages {
+    stage('Checkout') {
+        steps {
+            checkout scm
         }
-        
-        stage('Setup') {
-            steps {
-                // Create directories for test results with simpler commands
-                bat 'if not exist %PLAYWRIGHT_HTML_REPORT% mkdir %PLAYWRIGHT_HTML_REPORT%'
-                bat 'if not exist %TEST_RESULTS_DIR% mkdir %TEST_RESULTS_DIR%'
-                
-                // Install dependencies
-                bat 'npm ci'
-                bat 'npx playwright install --with-deps'
-            }
+    }
+
+    stage('Setup') {
+        steps {
+            // Create directories for test results with simpler commands
+            sh 'mkdir -p $PLAYWRIGHT_HTML_REPORT'
+            sh 'mkdir -p $TEST_RESULTS_DIR'
+
+            // Install dependencies
+            sh 'npm ci'
+            sh 'npx playwright install --with-deps'
         }
-        
-        stage('Run Tests') {
-            steps {
-                // Run tests with additional parameters for stability
-                bat 'npx playwright test --reporter=html,junit --retries=1 --timeout=60000'
-            }
-            post {
-                always {
-                    // Archive test artifacts
-                    archiveArtifacts artifacts: "playwright-report/**", allowEmptyArchive: true
-                    junit testResults: "test-results/**/*.xml", allowEmptyResults: true
-                }
+    }
+
+    stage('Run Tests') {
+        steps {
+            // Run tests with additional parameters for stability
+            sh 'npx playwright test --reporter=html,junit --retries=1 --timeout=60000'
+        }
+        post {
+            always {
+                // Archive test artifacts
+                archiveArtifacts artifacts: "playwright-report/**", allowEmptyArchive: true
+                junit testResults: "test-results/**/*.xml", allowEmptyResults: true
             }
         }
     }
+}
     
   post {
       always {
