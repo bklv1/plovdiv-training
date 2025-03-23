@@ -27,7 +27,10 @@ stages {
 
             // Install dependencies
             sh 'if [ -f package-lock.json ]; then npm ci; else npm install; fi'
-            sh 'npx playwright install --with-deps'
+            
+            // Install browsers with explicit permissions and skip browser download validation
+            sh 'PLAYWRIGHT_BROWSERS_PATH=0 npx playwright install --with-deps chromium firefox webkit'
+            sh 'chmod -R 777 ~/.cache/ms-playwright || true'
         }
     }
 
