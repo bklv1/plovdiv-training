@@ -50,7 +50,7 @@ pipeline {
                     <p>Test Summary: ${currentBuild.result == 'SUCCESS' ? 'All tests passed' : 'Some tests failed'}</p>
                     <p>See attached test report for details.</p>
                 """,
-                to: 'ceco@mailinator.com',
+                to: 'ceco@ceco.com',
                 attachmentsPattern: 'playwright-report/**/*.html',
                 mimeType: 'text/html',
                 // Removed DevelopersRecipientProvider to avoid unregistered user errors
