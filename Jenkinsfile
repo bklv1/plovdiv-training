@@ -1,6 +1,11 @@
 pipeline {
     agent any
     
+    options {
+        // Disable lightweight checkout to avoid issues
+        skipDefaultCheckout(true)
+    }
+    
     tools {
         nodejs 'NodeJS' // Use the NodeJS installation configured in Jenkins
     }
@@ -8,17 +13,30 @@ pipeline {
     // Define email recipients
     environment {
         EMAIL_RECIPIENTS = 'ceco@mailinator.com' // Change to your email or distribution list
+        PLAYWRIGHT_HTML_REPORT = 'playwright-report'
+        TEST_RESULTS_DIR = 'test-results'
     }
     
     stages {
         stage('Checkout') {
             steps {
-                checkout scm
+                // Force full checkout
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: '*/main']], // Adjust branch as needed
+                    extensions: [[$class: 'CleanBeforeCheckout']],
+                    userRemoteConfigs: scm.userRemoteConfigs
+                ])
             }
         }
         
-        stage('Install Dependencies') {
+        stage('Setup') {
             steps {
+                // Create directories for test results
+                bat 'if not exist %PLAYWRIGHT_HTML_REPORT% mkdir %PLAYWRIGHT_HTML_REPORT%'
+                bat 'if not exist %TEST_RESULTS_DIR% mkdir %TEST_RESULTS_DIR%'
+                
+                // Install dependencies
                 bat 'npm ci'
                 bat 'npx playwright install --with-deps'
             }
@@ -32,8 +50,8 @@ pipeline {
                     }
                     post {
                         always {
-                            archiveArtifacts artifacts: 'playwright-report/**', allowEmptyArchive: true
-                            junit 'test-results/login-*.xml'
+                            archiveArtifacts artifacts: "${PLAYWRIGHT_HTML_REPORT}/**", allowEmptyArchive: true
+                            junit testResults: "${TEST_RESULTS_DIR}/**/*.xml", allowEmptyResults: true
                         }
                     }
                 }
@@ -44,11 +62,18 @@ pipeline {
                     }
                     post {
                         always {
-                            archiveArtifacts artifacts: 'playwright-report/**', allowEmptyArchive: true
-                            junit 'test-results/dashboard-*.xml'
+                            archiveArtifacts artifacts: "${PLAYWRIGHT_HTML_REPORT}/**", allowEmptyArchive: true
+                            junit testResults: "${TEST_RESULTS_DIR}/**/*.xml", allowEmptyResults: true
                         }
                     }
                 }
+            }
+        }
+        
+        stage('Generate Combined Report') {
+            steps {
+                // Merge reports if needed
+                bat 'npx playwright merge-reports %PLAYWRIGHT_HTML_REPORT%'
             }
         }
     }
@@ -56,7 +81,7 @@ pipeline {
     post {
         always {
             // Generate combined test report
-            junit '**/test-results/*.xml'
+            junit testResults: "${TEST_RESULTS_DIR}/**/*.xml", allowEmptyResults: true
 
             // Send email with test results
             emailext (
@@ -66,19 +91,20 @@ pipeline {
                 <p>Test Summary: ${currentBuild.currentResult}</p>
                 <p>See detailed test results at: <a href='${env.BUILD_URL}testReport'>${env.JOB_NAME} [${env.BUILD_NUMBER}] Test Results</a></p>""",
                 to: "${EMAIL_RECIPIENTS}",
-                attachmentsPattern: 'playwright-report/**/*.html',
+                attachmentsPattern: "${PLAYWRIGHT_HTML_REPORT}/**/*.html",
                 mimeType: 'text/html',
                 attachLog: true
             )
-            
-            // Clean up workspace
-            cleanWs()
         }
         success {
             echo 'All tests passed!'
         }
         failure {
             echo 'Tests failed!'
+        }
+        cleanup {
+            // Clean up workspace
+            cleanWs()
         }
     }
 }

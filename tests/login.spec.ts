@@ -8,9 +8,18 @@ test.describe('Login Functionality', () => {
   let dashboardPage: DashboardPage;
 
   test.beforeEach(async ({ page }) => {
+    // Create a unique test ID for this test run
+    const testId = `login-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    
+    // Initialize page objects
     loginPage = new LoginPage(page);
     dashboardPage = new DashboardPage(page);
+    
+    // Navigate to login page
     await loginPage.navigateToLoginPage();
+    
+    // Take screenshot of initial state
+    await loginPage.takeScreenshot(`${testId}-initial-state`);
   });
 
   test('should login with valid credentials', async () => {

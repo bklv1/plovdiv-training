@@ -8,6 +8,10 @@ test.describe('Dashboard Functionality', () => {
   let dashboardPage: DashboardPage;
 
   test.beforeEach(async ({ page }) => {
+    // Create a unique test ID for this test run
+    const testId = `dashboard-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    
+    // Initialize page objects
     loginPage = new LoginPage(page);
     dashboardPage = new DashboardPage(page);
     
@@ -15,8 +19,9 @@ test.describe('Dashboard Functionality', () => {
     await loginPage.navigateToLoginPage();
     await loginPage.login(config.credentials.username, config.credentials.password);
     
-    // Verify login was successful
-    expect(await dashboardPage.isDashboardDisplayed()).toBeTruthy();
+    // Verify login was successful and take screenshot
+    expect(await dashboardPage.isDashboardDisplayed()).toBeTruthy('Dashboard should be displayed after login');
+    await dashboardPage.takeScreenshot(`${testId}-logged-in`);
   });
 
   test('should display quick launch widgets', async () => {
