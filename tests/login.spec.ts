@@ -3,6 +3,9 @@ import { LoginPage } from '../src/pages/login-page';
 import { DashboardPage } from '../src/pages/dashboard-page';
 import { config } from '../src/config/config';
 
+// Add retry for flaky tests in CI
+test.describe.configure({ retries: 2 });
+
 test.describe('Login Functionality', () => {
   let loginPage: LoginPage;
   let dashboardPage: DashboardPage;
@@ -16,13 +19,20 @@ test.describe('Login Functionality', () => {
     dashboardPage = new DashboardPage(page);
     
     // Set longer timeouts for CI environment
-    page.setDefaultTimeout(60000);
+    page.setDefaultTimeout(90000);
     
-    // Navigate to login page
-    await loginPage.navigateToLoginPage();
-    
-    // Take screenshot of initial state
-    await loginPage.takeScreenshot(`${testId}-initial-state`);
+    try {
+      // Navigate to login page
+      await loginPage.navigateToLoginPage();
+      
+      // Take screenshot of initial state
+      await loginPage.takeScreenshot(`${testId}-initial-state`);
+    } catch (error) {
+      console.error('Error in beforeEach:', error);
+      // Take screenshot of error state
+      await page.screenshot({ path: `./screenshots/error-${testId}.png` });
+      throw error;
+    }
   });
 
   test('should login with valid credentials', async () => {

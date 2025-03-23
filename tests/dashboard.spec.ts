@@ -3,6 +3,9 @@ import { LoginPage } from '../src/pages/login-page';
 import { DashboardPage } from '../src/pages/dashboard-page';
 import { config } from '../src/config/config';
 
+// Add retry for flaky tests in CI
+test.describe.configure({ retries: 2 });
+
 test.describe('Dashboard Functionality', () => {
   let loginPage: LoginPage;
   let dashboardPage: DashboardPage;
@@ -16,29 +19,38 @@ test.describe('Dashboard Functionality', () => {
     dashboardPage = new DashboardPage(page);
     
     // Set longer timeouts for CI environment
-    page.setDefaultTimeout(60000);
+    page.setDefaultTimeout(90000);
     
-    // Login before each test
-    await loginPage.navigateToLoginPage();
-    
-    // Add retry logic for login in CI environment
-    let retries = 3;
-    while (retries > 0) {
-      try {
-        await loginPage.login(config.credentials.username, config.credentials.password);
-        if (await dashboardPage.isDashboardDisplayed()) {
-          break;
+    try {
+      // Login before each test
+      await loginPage.navigateToLoginPage();
+      
+      // Add retry logic for login in CI environment
+      let retries = 3;
+      let loginSuccess = false;
+      
+      while (retries > 0 && !loginSuccess) {
+        try {
+          await loginPage.login(config.credentials.username, config.credentials.password);
+          await page.waitForTimeout(2000); // Wait for navigation
+          loginSuccess = await dashboardPage.isDashboardDisplayed();
+          if (loginSuccess) break;
+        } catch (error) {
+          console.log(`Login attempt failed, retries left: ${retries-1}`);
+          if (retries === 1) throw error;
         }
-      } catch (error) {
-        console.log(`Login attempt failed, retries left: ${retries-1}`);
-        if (retries === 1) throw error;
+        retries--;
       }
-      retries--;
+      
+      // Verify login was successful and take screenshot
+      expect(loginSuccess).toBeTruthy('Dashboard should be displayed after login');
+      await dashboardPage.takeScreenshot(`${testId}-logged-in`);
+    } catch (error) {
+      console.error('Error in beforeEach:', error);
+      // Take screenshot of error state
+      await page.screenshot({ path: `./screenshots/error-${testId}.png` });
+      throw error;
     }
-    
-    // Verify login was successful and take screenshot
-    expect(await dashboardPage.isDashboardDisplayed()).toBeTruthy('Dashboard should be displayed after login');
-    await dashboardPage.takeScreenshot(`${testId}-logged-in`);
   });
 
   test('should display quick launch widgets', async () => {

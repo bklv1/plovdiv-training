@@ -15,25 +15,16 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Use explicit checkout instead of 'checkout scm'
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: '*/master']], // Use master branch
-                    doGenerateSubmoduleConfigurations: false,
-                    extensions: [],
-                    submoduleCfg: [],
-                    userRemoteConfigs: [[
-                        url: 'https://github.com/bklv1/plovdiv-training.git'
-                    ]]
-                ])
+                // Simple checkout to avoid EditDistance errors
+                checkout scm
             }
         }
         
         stage('Setup') {
             steps {
-                // Create directories for test results
-                bat 'mkdir %PLAYWRIGHT_HTML_REPORT% 2>nul || echo Directory already exists'
-                bat 'mkdir %TEST_RESULTS_DIR% 2>nul || echo Directory already exists'
+                // Create directories for test results with simpler commands
+                bat 'if not exist %PLAYWRIGHT_HTML_REPORT% mkdir %PLAYWRIGHT_HTML_REPORT%'
+                bat 'if not exist %TEST_RESULTS_DIR% mkdir %TEST_RESULTS_DIR%'
                 
                 // Install dependencies
                 bat 'npm ci'
@@ -41,30 +32,15 @@ pipeline {
             }
         }
         
-        stage('Run Tests in Parallel') {
-            parallel {
-                stage('Login Tests') {
-                    steps {
-                        bat 'npx playwright test tests/login.spec.ts --reporter=html,junit'
-                    }
-                    post {
-                        always {
-                            archiveArtifacts artifacts: "${PLAYWRIGHT_HTML_REPORT}/**", allowEmptyArchive: true
-                            junit allowEmptyResults: true, testResults: "${TEST_RESULTS_DIR}/**/*.xml"
-                        }
-                    }
-                }
-                
-                stage('Dashboard Tests') {
-                    steps {
-                        bat 'npx playwright test tests/dashboard.spec.ts --reporter=html,junit'
-                    }
-                    post {
-                        always {
-                            archiveArtifacts artifacts: "${PLAYWRIGHT_HTML_REPORT}/**", allowEmptyArchive: true
-                            junit allowEmptyResults: true, testResults: "${TEST_RESULTS_DIR}/**/*.xml"
-                        }
-                    }
+        stage('Run Tests') {
+            steps {
+                // Run all tests in a single command to avoid parallel issues
+                bat 'npx playwright test --reporter=html,junit'
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: "playwright-report/**", allowEmptyArchive: true
+                    junit "test-results/**/*.xml"
                 }
             }
         }
@@ -80,7 +56,7 @@ pipeline {
                 <p>Test Summary: ${currentBuild.currentResult}</p>
                 <p>See detailed test results at: <a href='${env.BUILD_URL}testReport'>${env.JOB_NAME} [${env.BUILD_NUMBER}] Test Results</a></p>""",
                 to: "${EMAIL_RECIPIENTS}",
-                attachmentsPattern: "${PLAYWRIGHT_HTML_REPORT}/**/*.html",
+                attachmentsPattern: "playwright-report/**/*.html",
                 mimeType: 'text/html',
                 attachLog: true
             )
