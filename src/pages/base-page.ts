@@ -5,7 +5,7 @@ import { Logger } from '../utils/logger';
  * Base page object that all page objects will inherit from
  */
 export class BasePage {
-  constructor(protected page: Page) {}
+  constructor(public page: Page) {}
 
   /**
    * Navigate to a specific URL
