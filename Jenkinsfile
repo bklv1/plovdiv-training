@@ -26,7 +26,7 @@ stages {
             sh 'mkdir -p $TEST_RESULTS_DIR'
 
             // Install dependencies
-            sh 'npm ci'
+            sh 'if [ -f package-lock.json ]; then npm ci; else npm install; fi'
             sh 'npx playwright install --with-deps'
         }
     }
