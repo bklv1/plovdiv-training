@@ -37,7 +37,7 @@ pipeline {
                     <p>Test Summary: ${currentBuild.result == 'SUCCESS' ? 'All tests passed' : 'Some tests failed'}</p>
                     <p>See attached test report for details.</p>
                 """,
-                to: 'your.email@example.com',
+                to: 'ceco@mailnator.com',
                 attachmentsPattern: 'playwright-report/**/*.html',
                 mimeType: 'text/html',
                 recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
