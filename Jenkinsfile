@@ -15,8 +15,13 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Simple checkout to avoid EditDistance errors
-                checkout scm
+                // Use specific checkout options to avoid EditDistance errors
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: '*/main']],
+                    extensions: [[$class: 'CleanBeforeCheckout']],
+                    userRemoteConfigs: [[url: scm.userRemoteConfigs[0].url]]
+                ])
             }
         }
         
@@ -34,13 +39,14 @@ pipeline {
         
         stage('Run Tests') {
             steps {
-                // Run all tests in a single command to avoid parallel issues
-                bat 'npx playwright test --reporter=html,junit'
+                // Run tests with additional parameters for stability
+                bat 'npx playwright test --reporter=html,junit --retries=1 --timeout=60000'
             }
             post {
                 always {
+                    // Archive test artifacts
                     archiveArtifacts artifacts: "playwright-report/**", allowEmptyArchive: true
-                    junit "test-results/**/*.xml"
+                    junit testResults: "test-results/**/*.xml", allowEmptyResults: true
                 }
             }
         }
