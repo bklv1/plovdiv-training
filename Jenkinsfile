@@ -37,10 +37,11 @@ pipeline {
                     <p>Test Summary: ${currentBuild.result == 'SUCCESS' ? 'All tests passed' : 'Some tests failed'}</p>
                     <p>See attached test report for details.</p>
                 """,
-                to: 'ceco@mailnator.com',
+                to: 'ceco@mailnator.com, cvetomirbanovski@gmail.com',
                 attachmentsPattern: 'playwright-report/**/*.html',
                 mimeType: 'text/html',
-                recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
+                // Removed DevelopersRecipientProvider to avoid unregistered user errors
+                recipientProviders: [[$class: 'RequesterRecipientProvider']]
             )
         }
     }
