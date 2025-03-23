@@ -22,7 +22,10 @@ test.describe('Dashboard Functionality', () => {
   test('should display quick launch widgets', async () => {
     // Verify quick launch widgets are displayed
     const quickLaunchCount = await dashboardPage.getQuickLaunchItemsCount();
-    expect(quickLaunchCount).toBeGreaterThan(0);
+    expect(quickLaunchCount).toBeGreaterThan(0, 'Dashboard should have at least one quick launch widget');
+    
+    // Take a screenshot for the report
+    await dashboardPage.takeScreenshot('dashboard-widgets');
   });
 
   test('should navigate to different sections from sidebar', async () => {
@@ -39,6 +42,9 @@ test.describe('Dashboard Functionality', () => {
     await dashboardPage.logout();
     
     // Verify user is logged out and login page is displayed
-    expect(await loginPage.isLoginPageDisplayed()).toBeTruthy();
+    expect(await loginPage.isLoginPageDisplayed()).toBeTruthy('Login page should be displayed after logout');
+    
+    // Take a screenshot for the report
+    await loginPage.takeScreenshot('after-logout');
   });
 });
