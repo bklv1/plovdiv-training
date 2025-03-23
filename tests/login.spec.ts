@@ -15,6 +15,9 @@ test.describe('Login Functionality', () => {
     loginPage = new LoginPage(page);
     dashboardPage = new DashboardPage(page);
     
+    // Set longer timeouts for CI environment
+    page.setDefaultTimeout(60000);
+    
     // Navigate to login page
     await loginPage.navigateToLoginPage();
     

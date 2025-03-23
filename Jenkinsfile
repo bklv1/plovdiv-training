@@ -1,11 +1,6 @@
 pipeline {
     agent any
     
-    options {
-        // Disable lightweight checkout to avoid issues
-        skipDefaultCheckout(true)
-    }
-    
     tools {
         nodejs 'NodeJS' // Use the NodeJS installation configured in Jenkins
     }
@@ -20,21 +15,15 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Force full checkout
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: '*/main']], // Adjust branch as needed
-                    extensions: [[$class: 'CleanBeforeCheckout']],
-                    userRemoteConfigs: scm.userRemoteConfigs
-                ])
+                checkout scm
             }
         }
         
         stage('Setup') {
             steps {
                 // Create directories for test results
-                bat 'if not exist %PLAYWRIGHT_HTML_REPORT% mkdir %PLAYWRIGHT_HTML_REPORT%'
-                bat 'if not exist %TEST_RESULTS_DIR% mkdir %TEST_RESULTS_DIR%'
+                bat 'mkdir %PLAYWRIGHT_HTML_REPORT% 2>nul || echo Directory already exists'
+                bat 'mkdir %TEST_RESULTS_DIR% 2>nul || echo Directory already exists'
                 
                 // Install dependencies
                 bat 'npm ci'
@@ -51,7 +40,7 @@ pipeline {
                     post {
                         always {
                             archiveArtifacts artifacts: "${PLAYWRIGHT_HTML_REPORT}/**", allowEmptyArchive: true
-                            junit testResults: "${TEST_RESULTS_DIR}/**/*.xml", allowEmptyResults: true
+                            junit "${TEST_RESULTS_DIR}/**/*.xml"
                         }
                     }
                 }
@@ -63,26 +52,16 @@ pipeline {
                     post {
                         always {
                             archiveArtifacts artifacts: "${PLAYWRIGHT_HTML_REPORT}/**", allowEmptyArchive: true
-                            junit testResults: "${TEST_RESULTS_DIR}/**/*.xml", allowEmptyResults: true
+                            junit "${TEST_RESULTS_DIR}/**/*.xml"
                         }
                     }
                 }
-            }
-        }
-        
-        stage('Generate Combined Report') {
-            steps {
-                // Merge reports if needed
-                bat 'npx playwright merge-reports %PLAYWRIGHT_HTML_REPORT%'
             }
         }
     }
     
     post {
         always {
-            // Generate combined test report
-            junit testResults: "${TEST_RESULTS_DIR}/**/*.xml", allowEmptyResults: true
-
             // Send email with test results
             emailext (
                 subject: "${currentBuild.currentResult}: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
@@ -101,10 +80,6 @@ pipeline {
         }
         failure {
             echo 'Tests failed!'
-        }
-        cleanup {
-            // Clean up workspace
-            cleanWs()
         }
     }
 }

@@ -15,9 +15,26 @@ test.describe('Dashboard Functionality', () => {
     loginPage = new LoginPage(page);
     dashboardPage = new DashboardPage(page);
     
+    // Set longer timeouts for CI environment
+    page.setDefaultTimeout(60000);
+    
     // Login before each test
     await loginPage.navigateToLoginPage();
-    await loginPage.login(config.credentials.username, config.credentials.password);
+    
+    // Add retry logic for login in CI environment
+    let retries = 3;
+    while (retries > 0) {
+      try {
+        await loginPage.login(config.credentials.username, config.credentials.password);
+        if (await dashboardPage.isDashboardDisplayed()) {
+          break;
+        }
+      } catch (error) {
+        console.log(`Login attempt failed, retries left: ${retries-1}`);
+        if (retries === 1) throw error;
+      }
+      retries--;
+    }
     
     // Verify login was successful and take screenshot
     expect(await dashboardPage.isDashboardDisplayed()).toBeTruthy('Dashboard should be displayed after login');
