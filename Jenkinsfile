@@ -1,9 +1,9 @@
 pipeline {
     agent any
     
-    tools {
-        nodejs 'NodeJS' // Use the NodeJS installation configured in Jenkins
-    }
+//     tools {
+//         nodejs 'NodeJS' // Use the NodeJS installation configured in Jenkins
+//     }
     
     // Define email recipients
     environment {
@@ -15,13 +15,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Use specific checkout options to avoid EditDistance errors
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: '*/main']],
-                    extensions: [[$class: 'CleanBeforeCheckout']],
-                    userRemoteConfigs: [[url: scm.userRemoteConfigs[0].url]]
-                ])
+                checkout scm
             }
         }
         
@@ -52,26 +46,17 @@ pipeline {
         }
     }
     
-    post {
-        always {
-            // Send email with test results
-            emailext (
-                subject: "${currentBuild.currentResult}: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
-                body: """<p>${currentBuild.currentResult}: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
-                <p>Check console output at <a href='${env.BUILD_URL}'>${env.JOB_NAME} [${env.BUILD_NUMBER}]</a></p>
-                <p>Test Summary: ${currentBuild.currentResult}</p>
-                <p>See detailed test results at: <a href='${env.BUILD_URL}testReport'>${env.JOB_NAME} [${env.BUILD_NUMBER}] Test Results</a></p>""",
-                to: "${EMAIL_RECIPIENTS}",
-                attachmentsPattern: "playwright-report/**/*.html",
-                mimeType: 'text/html',
-                attachLog: true
-            )
-        }
-        success {
-            echo 'All tests passed!'
-        }
-        failure {
-            echo 'Tests failed!'
-        }
-    }
+  post {
+      always {
+          emailext body: "Build ${currentBuild.currentResult}: Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}\n More info at: ${env.BUILD_URL}",
+                   subject: "Jenkins Build ${currentBuild.currentResult}: Job ${env.JOB_NAME}",
+                   to: "${EMAIL_RECIPIENTS}"
+      }
+      success {
+          echo 'All tests passed!'
+      }
+      failure {
+          echo 'Tests failed!'
+      }
+  }
 }
