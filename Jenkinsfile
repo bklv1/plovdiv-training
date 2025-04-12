@@ -10,6 +10,7 @@ pipeline {
             steps {
                 sh 'npm install'
                 sh 'npx playwright install'
+                sh 'sudo npx playwright install-deps'
             }
         }
 
