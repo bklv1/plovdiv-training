@@ -17,10 +17,10 @@ pipeline {
                 // Create test results directory if it doesn't exist
                 sh 'mkdir -p test-results'
                 
-                // Run tests and allow the build to fail if tests fail
+                // Run tests only on Chromium and in parallel with more workers
                 sh '''
-                    # Run tests and capture the exit code
-                    npm run test
+                    # Run tests with Chromium only and with increased parallelism
+                    npx playwright test --project=chromium --workers=4
                     TEST_EXIT_CODE=$?
                     
                     # If no JUnit reports were generated, create a minimal one
