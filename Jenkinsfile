@@ -17,14 +17,19 @@ pipeline {
                 // Create test results directory if it doesn't exist
                 sh 'mkdir -p test-results'
                 
-                // Run tests and ensure we have a basic report even if tests fail
+                // Run tests and allow the build to fail if tests fail
                 sh '''
-                    npm run test || true
+                    # Run tests and capture the exit code
+                    npm run test
+                    TEST_EXIT_CODE=$?
                     
                     # If no JUnit reports were generated, create a minimal one
                     if [ ! -f "test-results/junit-*.xml" ]; then
-                        echo '<?xml version="1.0" encoding="UTF-8"?><testsuites><testsuite name="Placeholder" tests="1" errors="0" failures="0" skipped="0"><testcase classname="Placeholder" name="No tests run" time="0"></testcase></testsuite></testsuites>' > test-results/junit-placeholder.xml
+                        echo '<?xml version="1.0" encoding="UTF-8"?><testsuites><testsuite name="Placeholder" tests="1" errors="0" failures="1" skipped="0"><testcase classname="Placeholder" name="No tests run" time="0"><failure message="Test execution failed or no tests were executed">Tests failed with exit code ${TEST_EXIT_CODE}</failure></testcase></testsuite></testsuites>' > test-results/junit-placeholder.xml
                     fi
+                    
+                    # Exit with the original test exit code to fail the build if tests failed
+                    exit $TEST_EXIT_CODE
                 '''
             }
             post {
@@ -32,8 +37,8 @@ pipeline {
                     // Archive test results and reports
                     archiveArtifacts artifacts: 'playwright-report/**', allowEmptyArchive: true
                     
-                    // Handle JUnit reports with allowEmptyResults to prevent pipeline failure
-                    junit testResults: 'test-results/junit-*.xml', allowEmptyResults: true, skipPublishingChecks: true
+                    // Handle JUnit reports but allow the build to fail if tests fail
+                    junit testResults: 'test-results/junit-*.xml', allowEmptyResults: true
                 }
             }
         }
