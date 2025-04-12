@@ -9,6 +9,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 sh 'npm install'
+                sh 'npx playwright install'
             }
         }
 
@@ -16,11 +17,11 @@ pipeline {
             steps {
                 // Create test results directory if it doesn't exist
                 sh 'mkdir -p test-results'
-                
+
                 // Run tests only on Chromium and in parallel with more workers
                 sh '''
                     # Run tests with Chromium only and with increased parallelism
-                    npm run test
+                    npx playwright test --project=chromium --workers=4
                     TEST_EXIT_CODE=$?
                     
                     # If no JUnit reports were generated, create a minimal one
