@@ -39,7 +39,7 @@ pipeline {
                     
                     // Handle JUnit reports but allow the build to fail if tests fail
                     junit testResults: 'test-results/junit-*.xml', allowEmptyResults: true
-                    'Test report must be generated!'
+                    sh 'echo 'Test report must be generated!''
                 }
             }
         }
