@@ -21,7 +21,7 @@ pipeline {
                 // Run tests only on Chromium and in parallel with more workers
                 sh '''
                     # Run tests with Chromium only and with increased parallelism
-                    npx playwright test --project=chromium --workers=4
+                    npm run test
                     TEST_EXIT_CODE=$?
                     
                     # If no JUnit reports were generated, create a minimal one
