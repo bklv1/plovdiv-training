@@ -39,9 +39,9 @@ test.describe('Login Functionality', () => {
     await loginPage.login(config.credentials.username, config.credentials.password);
     
     // Verify user is logged in and dashboard is displayed
-    expect(await dashboardPage.isDashboardDisplayed()).toBeTruthy('Dashboard should be displayed after login');
+    expect(await dashboardPage.isDashboardDisplayed()).toBeTruthy();
     const dashboardTitle = await dashboardPage.getDashboardTitle();
-    expect(dashboardTitle).toContain('Dashboard', 'Dashboard title should contain "Dashboard"');
+    expect(dashboardTitle).toContain('Dashboard');
   });
 
   test('should display error message with invalid credentials', async () => {
@@ -49,10 +49,10 @@ test.describe('Login Functionality', () => {
     
     // Verify error message is displayed
     const errorMessage = await loginPage.getErrorMessage();
-    expect(errorMessage).toContain('Invalid credentials', 'Error message should indicate invalid credentials');
+    expect(errorMessage).toContain('Invalid credentials');
     
     // Verify we're still on the login page
-    expect(await loginPage.isLoginPageDisplayed()).toBeTruthy('Login page should still be displayed after failed login');
+    expect(await loginPage.isLoginPageDisplayed()).toBeTruthy();
   });
 
   test('should navigate to forgot password page', async () => {

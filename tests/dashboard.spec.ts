@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
-import { LoginPage } from '../src/pages/login-page';
-import { DashboardPage } from '../src/pages/dashboard-page';
-import { config } from '../src/config/config';
+import { LoginPage } from '@pages/login-page';
+import { DashboardPage } from '@pages/dashboard-page';
+import { config } from '@config/config';
 
 // Add retry for flaky tests in CI
 test.describe.configure({ retries: 2 });
@@ -43,7 +43,7 @@ test.describe('Dashboard Functionality', () => {
       }
       
       // Verify login was successful and take screenshot
-      expect(loginSuccess).toBeTruthy('Dashboard should be displayed after login');
+      expect(loginSuccess).toBeTruthy();
       await dashboardPage.takeScreenshot(`${testId}-logged-in`);
     } catch (error) {
       console.error('Error in beforeEach:', error);
@@ -56,7 +56,7 @@ test.describe('Dashboard Functionality', () => {
   test('should display quick launch widgets', async () => {
     // Verify quick launch widgets are displayed
     const quickLaunchCount = await dashboardPage.getQuickLaunchItemsCount();
-    expect(quickLaunchCount).toBeGreaterThan(0, 'Dashboard should have at least one quick launch widget');
+    expect(quickLaunchCount).toBeGreaterThan(0);
     
     // Take a screenshot for the report
     await dashboardPage.takeScreenshot('dashboard-widgets');
@@ -76,7 +76,7 @@ test.describe('Dashboard Functionality', () => {
     await dashboardPage.logout();
     
     // Verify user is logged out and login page is displayed
-    expect(await loginPage.isLoginPageDisplayed()).toBeTruthy('Login page should be displayed after logout');
+    expect(await loginPage.isLoginPageDisplayed()).toBeTruthy();
     
     // Take a screenshot for the report
     await loginPage.takeScreenshot('after-logout');
