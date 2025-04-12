@@ -39,18 +39,9 @@ pipeline {
                     
                     // Handle JUnit reports but allow the build to fail if tests fail
                     junit testResults: 'test-results/junit-*.xml', allowEmptyResults: true
+                    'Test report must be generated!'
                 }
             }
-        }
-    }
-    
-    post {
-        always {
-            // Archive the entire playwright-report directory for local download
-            archiveArtifacts artifacts: 'playwright-report/**/*', allowEmptyArchive: true
-            
-            echo "Test execution completed. Reports are available for download from the Jenkins artifacts."
-            echo "You can download the report files from the Jenkins web interface."
         }
     }
 }
