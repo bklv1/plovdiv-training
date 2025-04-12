@@ -9,8 +9,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 sh 'npm install'
-                sh 'npx playwright install'
-                sh 'sudo npx playwright install-deps'
+                sh 'npx playwright install-deps'
             }
         }
 
