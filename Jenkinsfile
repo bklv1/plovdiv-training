@@ -41,22 +41,11 @@ pipeline {
     
     post {
         always {
-            // Send email with test results
-            emailext (
-                subject: "Test Report: ${currentBuild.fullDisplayName}",
-                body: """
-                    <p>Build Status: ${currentBuild.result}</p>
-                    <p>Build URL: ${env.BUILD_URL}</p>
-                    <p>Test Summary: ${currentBuild.result == 'SUCCESS' ? 'All tests passed' : 'Some tests failed'}</p>
-                    <p>See attached test report for details.</p>
-                """,
-                from: 'cvetomirbanovski@gmail.com',
-                to: 'ceco@ceco.com',
-                attachmentsPattern: 'playwright-report/**/*.html',
-                mimeType: 'text/html',
-                // Removed DevelopersRecipientProvider to avoid unregistered user errors
-                recipientProviders: [[$class: 'RequesterRecipientProvider']]
-            )
+            // Archive the entire playwright-report directory for local download
+            archiveArtifacts artifacts: 'playwright-report/**/*', allowEmptyArchive: true
+            
+            echo "Test execution completed. Reports are available for download from the Jenkins artifacts."
+            echo "You can download the report files from the Jenkins web interface."
         }
     }
 }
