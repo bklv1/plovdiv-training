@@ -5,25 +5,11 @@ pipeline {
         nodejs 'NodeJS'
     }
     
-    options {
-        timeout(time: 30, unit: 'MINUTES')
-        ansiColor('xterm')
-    }
-    
     stages {
-        stage('Setup') {
-            steps {
-                echo "Node.js version:"
-                sh 'node --version'
-                echo "NPM version:"
-                sh 'npm --version'
-            }
-        }
-        
         stage('Install Dependencies') {
             steps {
-                sh 'npm ci || npm install'
-                sh 'PLAYWRIGHT_BROWSERS_PATH=0 npx playwright install --with-deps chromium || echo "Chromium installation failed but continuing"'
+                sh 'npm install'
+                sh 'npx playwright install --with-deps chromium'
             }
         }
     
@@ -34,27 +20,10 @@ pipeline {
             post {
                 always {
                     archiveArtifacts artifacts: 'playwright-report/**', allowEmptyArchive: true
-                    archiveArtifacts artifacts: 'test-results/**', allowEmptyArchive: true
-                }
-                failure {
-                    echo 'Tests failed! Check the archived reports for details.'
-                }
-                success {
-                    echo 'All tests passed successfully!'
+                    // Handle JUnit reports but allow the build to fail if tests fail
+                    junit testResults: 'test-results/junit-*.xml', allowEmptyResults: true
                 }
             }
-        }
-    }
-    
-    post {
-        always {
-            echo 'Pipeline execution completed'
-        }
-        failure {
-            echo 'Pipeline failed'
-        }
-        success {
-            echo 'Pipeline succeeded'
         }
     }
 }
