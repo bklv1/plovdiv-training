@@ -9,10 +9,9 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 sh 'npm install'
-                sh 'sudo npx playwright install-deps'
             }
         }
-
+    
         stage('Run Tests') {
             steps {
                 // Create test results directory if it doesn't exist
