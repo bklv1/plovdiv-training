@@ -9,6 +9,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 sh 'npm install'
+                sh 'npx playwright install --with-deps chromium'
             }
         }
     
@@ -35,9 +36,8 @@ pipeline {
                 always {
                     // Archive test results and reports
                     archiveArtifacts artifacts: 'playwright-report/**', allowEmptyArchive: true
-//
-//                     // Handle JUnit reports but allow the build to fail if tests fail
-//                     junit testResults: 'test-results/junit-*.xml', allowEmptyResults: true
+                    // Handle JUnit reports but allow the build to fail if tests fail
+                    junit testResults: 'test-results/junit-*.xml', allowEmptyResults: true
                 }
             }
         }
