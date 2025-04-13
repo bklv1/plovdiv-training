@@ -23,8 +23,8 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 sh 'npm ci || npm install'
-                sh 'npx playwright install chromium || true'
-                sh 'sudo npx playwright install-deps chromium || true'
+                sh 'npx playwright install chromium || echo "Chromium installation failed but continuing"'
+                sh 'npx playwright install-deps chromium || echo "Dependencies installation failed but continuing"'
             }
         }
     
