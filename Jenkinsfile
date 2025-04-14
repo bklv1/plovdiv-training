@@ -8,7 +8,10 @@ pipeline {
     stages {
         stage('Install Dependencies') {
             steps {
-                sh 'npm install'
+                sh '''
+                    npm i -D @playwright/test
+                    npx playwright install
+                '''
             }
         }
         stage('Run Tests') {
