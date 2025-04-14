@@ -68,7 +68,8 @@ test.describe('Dashboard Functionality', () => {
     
     // Verify Admin page is loaded
     const pageTitle = await dashboardPage.page.locator('.oxd-topbar-header-breadcrumb').textContent();
-    expect(pageTitle).toContain('Admin');
+    //TODO: fix later
+    expect(pageTitle).toContain('AdminCho');
   });
 
   test('should logout successfully', async () => {
