@@ -15,7 +15,7 @@ pipeline {
             steps {
                 sh 'npm run test'
             }
-            post {
+            post {  
                 always {
                     archiveArtifacts artifacts: 'playwright-report/**', allowEmptyArchive: true
                     junit testResults: 'test-results/junit-*.xml', allowEmptyResults: true
