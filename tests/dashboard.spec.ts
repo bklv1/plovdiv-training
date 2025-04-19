@@ -64,7 +64,7 @@ test.describe('Dashboard Functionality', () => {
 
   test('should navigate to different sections from sidebar', async () => {
     // Navigate to Admin page
-    await dashboardPage.navigateToMenu('Admin');
+    await dashboardPage.navigateToMenu('Admin_Min');
 
     // Verify Admin page is loaded
     const pageTitle = await dashboardPage.page.locator('.oxd-topbar-header-breadcrumb').textContent();
