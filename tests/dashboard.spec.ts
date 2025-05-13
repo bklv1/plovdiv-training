@@ -86,6 +86,6 @@ test.describe('Dashboard Functionality', () => {
         await dashboardPage.page.locator("button[title=\"Apply Leave\"]").click();
         await dashboardPage.waitForPageLoad();
         const actualMessage : string | null = await dashboardPage.page.locator('.oxd-text--subtitle-2').textContent();
-        expect(actualMessage).toEqual('No Leave Types with Leave Balance. GRESHKAAAAA');
+        expect(actualMessage).toEqual('No Leave Types with Leave Balance.');
     })
 });

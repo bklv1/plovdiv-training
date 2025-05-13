@@ -25,7 +25,7 @@ pipeline {
                     echo 'SUCCESS with Plovdiv group'
                 }
                 failure {
-                    echo 'SUCCESS with Plovdiv group'
+                    echo 'FAIL with Plovdiv group'
                 }
             }
         }
