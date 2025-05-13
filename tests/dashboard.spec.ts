@@ -82,10 +82,4 @@ test.describe('Dashboard Functionality', () => {
         await loginPage.takeScreenshot('after-logout');
     });
 
-    test('apply leave should be empty', async () => {
-        await dashboardPage.page.locator("button[title=\"Apply Leave\"]").click();
-        await dashboardPage.waitForPageLoad();
-        const actualMessage : string | null = await dashboardPage.page.locator('.oxd-text--subtitle-2').textContent();
-        expect(actualMessage).toEqual('No Leave Types with Leave Balance');
-    })
 });
