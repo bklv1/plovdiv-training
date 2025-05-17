@@ -82,4 +82,12 @@ test.describe('Dashboard Functionality', () => {
         await loginPage.takeScreenshot('after-logout');
     });
 
+    test('Apply Leave option should return empty message', async () => {
+        const applyLeaveButton = dashboardPage.page.locator('button[title=\'Apply Leave\']');
+        await applyLeaveButton.click();
+
+        const subtitleMessage = await dashboardPage.page.locator('.oxd-text--subtitle-2').textContent();
+        expect(subtitleMessage).toEqual('No Leave Types with Leave Balance ERROR');
+    })
+
 });
